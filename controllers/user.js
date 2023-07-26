@@ -1,3 +1,5 @@
+//Import jwt fn
+const jwt = require("../helpers/jwt")
 //Import dependencies
 const bcrypt = require("bcrypt")
 //Import Validate fn
@@ -81,9 +83,59 @@ const register = (req, res) => {
         })
     })
 }
+const login = (req, res) => {
+    //Get petitions params
+    let params = req.body
+    //Check if arrive
+    if (!params.email || !params.password) {
+        return res.status(400).send({
+            status: "Error",
+            message: "Missing data to send",
+        })
+    }
+    //Find if exist in DB
+    User.findOne({ email: params.email })
+        .select("+password +role")
+        .exec()
+        .then((user) => {
+            if (!user) {
+                return res.status(404).send({
+                    status: "Error",
+                    message: "User does not exist",
+                })
+            }
+            //Check password
+            const pwd = bcrypt.compareSync(params.password, user.password)
+            let identityUser = user.toObject()
+            delete identityUser.password
+            delete identityUser.role
+            if (!pwd) {
+                return res.status(404).send({
+                    status: "Error",
+                    message: "Password Error",
+                })
+            }
+            //Get JWT token (create token service)
+            const token = jwt.createToken(user)
+            //Return: user & token
+            return res.status(200).send({
+                status: "Success",
+                message: "Login method",
+                user: identityUser,
+                token
+            })
 
+        }).catch((error) => {
+            return res.status(500).send({
+                status: "Error",
+                message: "Login Error"
+            })
+        })
+
+}
 //Export actions
 module.exports = {
     test,
-    register
+    register,
+    login
 }
