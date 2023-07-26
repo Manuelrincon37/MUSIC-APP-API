@@ -18,11 +18,13 @@ const UserSchema = Schema({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        select: false
     },
     role: {
         type: String,
-        default: "role_user"
+        default: "role_user",
+        selec: false
     },
     image: {
         type: String,
