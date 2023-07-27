@@ -2,6 +2,7 @@
 const jwt = require("../helpers/jwt")
 //Import dependencies
 const bcrypt = require("bcrypt")
+const fs = require("node:fs")
 //Import Validate fn
 const validate = require("../helpers/validate")
 //Import User model
@@ -164,7 +165,7 @@ const update = (req, res) => {
     let userToUpdate = req.body
     //Validate data
     try {
-        validate(params)
+        validate(userToUpdate)
     } catch (error) {
         return res.status(400).send({
             status: "Error",
@@ -223,7 +224,54 @@ const update = (req, res) => {
             message: "Find user error"
         })
     })
+}
 
+const upload = (req, res) => {
+    //Set upload configuration of Multer
+
+    //Get & check image file 
+    if (!req.file) {
+        return res.status(404).send({
+            status: "Error",
+            message: "No iamge file sended"
+        })
+    }
+    //Get file.name
+    let image = req.file.originalname
+    //Get image info (extention)
+    const imageSplit = image.split("\.")
+    const extention = imageSplit[1]
+    //Check if has a valid extention
+    if (extention != "png" && extention != "jpg" && extention != "jpeg" && extention != "gif") {
+        //Delete file
+        const filePath = req.file.path
+        const fileDeleted = fs.unlinkSync(filePath)
+        //Return error
+        return res.status(400).send({
+            status: "Error",
+            message: "Unvalid file extention"
+        })
+    }
+    //If vali --> return response
+    User.findOneAndUpdate({ _id: req.user.id }, { image: req.file.filename }, { new: true })
+        .then((userUpdated) => {
+            if (!userUpdated) {
+                return res.status(500).send({
+                    status: "Error",
+                    message: "Upload file error"
+                })
+            }
+            return res.status(200).send({
+                status: "Success",
+                messahe: "Upload img method",
+                userUpdated
+            })
+        }).catch((error) => {
+            return res.status(500).send({
+                status: "Error",
+                message: "Find user error"
+            })
+        })
 }
 //Export actions
 module.exports = {
@@ -231,5 +279,6 @@ module.exports = {
     register,
     login,
     profile,
-    update
+    update,
+    upload
 }
