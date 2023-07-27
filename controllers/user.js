@@ -124,18 +124,42 @@ const login = (req, res) => {
                 user: identityUser,
                 token
             })
-
         }).catch((error) => {
             return res.status(500).send({
                 status: "Error",
                 message: "Login Error"
             })
         })
+}
 
+const profile = (req, res) => {
+    //Get user id by URL
+    const id = req.params.id
+    //find profile data
+    User.findById(id).then((user) => {
+        if (!user) {
+            return res.status(404).send({
+                status: "Error",
+                message: "Profile not found"
+            })
+        }
+        //return result
+        return res.status(200).send({
+            status: "Success",
+            message: "Profile method",
+            user: user
+        })
+    }).catch((error) => {
+        return res.status(500).send({
+            status: "Error",
+            message: "Profiling Error"
+        })
+    })
 }
 //Export actions
 module.exports = {
     test,
     register,
-    login
+    login,
+    profile
 }
