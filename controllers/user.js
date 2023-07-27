@@ -156,10 +156,80 @@ const profile = (req, res) => {
         })
     })
 }
+
+const update = (req, res) => {
+    //Get identified user data
+    let userIdentity = req.user
+    //Get data to update
+    let userToUpdate = req.body
+    //Validate data
+    try {
+        validate(params)
+    } catch (error) {
+        return res.status(400).send({
+            status: "Error",
+            message: "Validation Error"
+        })
+    }
+    //Check if user exist
+    User.find({
+        $or: [
+            { email: userToUpdate.email.toLowerCase() },
+            { nick: userToUpdate.nick.toLowerCase() }
+        ]
+    }).exec().then(async (users) => {
+        //Check if user is not the identified user
+        let userIsSet = false
+        users.forEach(user => {
+            if (user && user._id != userIdentity.id) userIsSet = true
+        });
+        //If exist return response
+        if (userIsSet) {
+            return res.status(409).send({
+                status: "Success",
+                message: "User already exist"
+            })
+        }
+        //Cypher password || delete
+        if (userToUpdate.password) {
+            let pwd = await bcrypt.hash(userToUpdate.password, 10)
+            userToUpdate.password = pwd
+        } else {
+            delete userToUpdate.password
+        }
+        //FindAndUpdate()---> user
+        try {
+            let userUpdated = await User.findByIdAndUpdate({ _id: userIdentity.id }, userToUpdate, { new: true })
+            if (!userUpdated) {
+                return res.status(400).send({
+                    status: "Error",
+                    message: "Update user error"
+                })
+            }
+            //Return response
+            return res.status(200).send({
+                status: "Success",
+                user: userUpdated
+            })
+        } catch (error) {
+            return res.status(500).send({
+                status: "Error",
+                message: "Update user, server error"
+            })
+        }
+    }).catch((error) => {
+        return res.status(500).send({
+            status: "Error",
+            message: "Find user error"
+        })
+    })
+
+}
 //Export actions
 module.exports = {
     test,
     register,
     login,
-    profile
+    profile,
+    update
 }
