@@ -35,8 +35,34 @@ const save = (req, res) => {
         })
     })
 }
+
+//Get one artist method 
+const oneArtist = (req, res) => {
+    //Get URL params
+    const aritstId = req.params.id
+    //Find in DB
+    Artist.findById(aritstId).then((artist) => {
+        if (!artist) {
+            return res.status(40).send({
+                status: "Error",
+                message: "Artist not found"
+            })
+        }
+        return res.status(200).send({
+            status: "Success",
+            message: "Get one artist method",
+            artist
+        })
+    }).catch((error) => {
+        return res.status(500).send({
+            status: "Error",
+            message: "Find artist Error"
+        })
+    })
+}
 //Export actions
 module.exports = {
     test,
-    save
+    save,
+    oneArtist
 }
