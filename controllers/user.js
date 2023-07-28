@@ -3,6 +3,7 @@ const jwt = require("../helpers/jwt")
 //Import dependencies
 const bcrypt = require("bcrypt")
 const fs = require("node:fs")
+const path = require("path")
 //Import Validate fn
 const validate = require("../helpers/validate")
 //Import User model
@@ -273,6 +274,25 @@ const upload = (req, res) => {
             })
         })
 }
+
+const avatar = (req, res) => {
+    //Get params from URL
+    const file = req.params.file
+    //Mount file real path
+    const filePath = "./uploads/avatars/" + file
+    //Chekc if file exist
+    fs.stat(filePath, (error, exist) => {
+        if (error || !exist) {
+            return res.status(404).send({
+                status: "Error",
+                message: "File not found"
+            })
+        }
+        //Return file as it is
+        return res.sendFile(path.resolve(filePath))
+    })
+
+}
 //Export actions
 module.exports = {
     test,
@@ -280,5 +300,6 @@ module.exports = {
     login,
     profile,
     update,
-    upload
+    upload,
+    avatar
 }
