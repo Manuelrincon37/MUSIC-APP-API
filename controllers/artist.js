@@ -1,5 +1,10 @@
 //Import Artist model
+const artist = require("../models/artist")
 const Artist = require("../models/artist")
+//Import dependencies
+const fs = require("node:fs")
+const path = require("path")
+
 //Import mongoose pagination
 const mongoosePagination = require("mongoose-pagination")
 //Test action
@@ -144,8 +149,74 @@ const remove = async (req, res) => {
             error
         })
     }
+}
 
+const upload = (req, res) => {
+    //Set upload configuration of Multer
+    //Get artist id
+    let artistId = req.params.id
+    //Get & check image file 
+    if (!req.file) {
+        return res.status(404).send({
+            status: "Error",
+            message: "No iamge file sended"
+        })
+    }
+    //Get file.name
+    let image = req.file.originalname
+    //Get image info (extention)
+    const imageSplit = image.split("\.")
+    const extention = imageSplit[1]
+    //Check if has a valid extention
+    if (extention != "png" && extention != "jpg" && extention != "jpeg" && extention != "gif") {
+        //Delete file
+        const filePath = req.file.path
+        const fileDeleted = fs.unlinkSync(filePath)
+        //Return error
+        return res.status(400).send({
+            status: "Error",
+            message: "Unvalid file extention"
+        })
+    }
+    //If vali --> return response
+    Artist.findOneAndUpdate({ _id: artistId }, { image: req.file.filename }, { new: true })
+        .then((artistUpdated) => {
+            if (!artistUpdated) {
+                return res.status(500).send({
+                    status: "Error",
+                    message: "Upload file error"
+                })
+            }
+            return res.status(200).send({
+                status: "Success",
+                messahe: "Upload img method",
+                artist: artistUpdated,
+                file: req.file
+            })
+        }).catch((error) => {
+            return res.status(500).send({
+                status: "Error",
+                message: "Find user error"
+            })
+        })
+}
 
+const image = (req, res) => {
+    //Get params from URL
+    const file = req.params.file
+    //Mount file real path
+    const filePath = "./uploads/artists/" + file
+    //Chekc if file exist
+    fs.stat(filePath, (error, exist) => {
+        if (error || !exist) {
+            return res.status(404).send({
+                status: "Error",
+                message: "File not found"
+            })
+        }
+        //Return file as it is
+        return res.sendFile(path.resolve(filePath))
+    })
 }
 //Export actions
 module.exports = {
@@ -154,5 +225,7 @@ module.exports = {
     oneArtist,
     list,
     update,
-    remove
+    remove,
+    upload,
+    image
 }
