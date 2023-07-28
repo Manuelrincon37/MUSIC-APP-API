@@ -123,6 +123,28 @@ const update = (req, res) => {
                 message: "Update artist Error"
             })
         })
+}
+
+const remove = async (req, res) => {
+    //Get artist id from url params
+    const artistId = req.params.id
+    //Find and delete artist with "await"
+    try {
+        const artistRemoved = await Artist.findByIdAndDelete(artistId)
+        //Return result
+        return res.status(200).send({
+            status: "Success",
+            message: "Delete artist method",
+            artistRemoved
+        })
+    } catch (error) {
+        return res.status(500).send({
+            status: "Error",
+            message: "Delete artist Error",
+            error
+        })
+    }
+
 
 }
 //Export actions
@@ -131,5 +153,6 @@ module.exports = {
     save,
     oneArtist,
     list,
-    update
+    update,
+    remove
 }
