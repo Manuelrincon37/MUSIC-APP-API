@@ -10,5 +10,6 @@ const artistController = require("../controllers/artist")
 router.get("/artist-test", artistController.test)
 router.post("/save", check.auth, artistController.save)
 router.get("/artist/:id", check.auth, artistController.oneArtist)
+router.get("/list/:page?", check.auth, artistController.list)
 //Export routes
 module.exports = router

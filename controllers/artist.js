@@ -1,5 +1,7 @@
 //Import Artist model
 const Artist = require("../models/artist")
+//Import mongoose pagination
+const mongoosePagination = require("mongoose-pagination")
 //Test action
 const test = (req, res) => {
     return res.status(200).send({
@@ -43,7 +45,7 @@ const oneArtist = (req, res) => {
     //Find in DB
     Artist.findById(aritstId).then((artist) => {
         if (!artist) {
-            return res.status(40).send({
+            return res.status(404).send({
                 status: "Error",
                 message: "Artist not found"
             })
@@ -60,9 +62,45 @@ const oneArtist = (req, res) => {
         })
     })
 }
+
+//Get list of artists
+const list = (req, res) => {
+    //May get a page
+    let page = 1
+    if (req.params.page) {
+        page = req.params.page
+    }
+    //Define artist per page
+    const itemsPerpage = 5
+    //Find & paginate
+    Artist.find().paginate(page, itemsPerpage)
+        .then(async (artists) => {
+            const total = await Artist.countDocuments()
+            if (!artists) {
+                return res.status(400).send({
+                    status: "Error",
+                    message: "Could not list artists"
+                })
+            }
+            return res.status(200).send({
+                status: "Success",
+                message: "List artists",
+                artists,
+                page,
+                itemsPerpage,
+                total
+            })
+        }).catch((error) => {
+            return res.status(500).send({
+                status: "Error",
+                message: "Could not list artists"
+            })
+        })
+}
 //Export actions
 module.exports = {
     test,
     save,
-    oneArtist
+    oneArtist,
+    list
 }
