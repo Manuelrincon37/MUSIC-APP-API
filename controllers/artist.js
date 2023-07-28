@@ -97,10 +97,39 @@ const list = (req, res) => {
             })
         })
 }
+
+const update = (req, res) => {
+    //Get artist id from URL params
+    const artistId = req.params.id
+    //Get body data
+    const bodyData = req.body
+    //find & update artist
+    Artist.findByIdAndUpdate(artistId, bodyData, { new: true })
+        .then((artistUpdated) => {
+            if (!artistUpdated) {
+                return res.status(400).send({
+                    status: "Error",
+                    message: "Could not update artist"
+                })
+            }
+            return res.status(200).send({
+                status: "Success",
+                message: "Update artist method",
+                artistUpdated
+            })
+        }).catch((error) => {
+            return res.status(500).send({
+                status: "Error",
+                message: "Update artist Error"
+            })
+        })
+
+}
 //Export actions
 module.exports = {
     test,
     save,
     oneArtist,
-    list
+    list,
+    update
 }
