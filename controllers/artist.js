@@ -1,12 +1,14 @@
-//Import Artist model
-const artist = require("../models/artist")
+//Import models
+const Album = require("../models/album")
 const Artist = require("../models/artist")
+const Song = require("../models/song")
 //Import dependencies
 const fs = require("node:fs")
 const path = require("path")
 
 //Import mongoose pagination
 const mongoosePagination = require("mongoose-pagination")
+const artist = require("../models/artist")
 //Test action
 const test = (req, res) => {
     return res.status(200).send({
@@ -136,11 +138,15 @@ const remove = async (req, res) => {
     //Find and delete artist with "await"
     try {
         const artistRemoved = await Artist.findByIdAndDelete(artistId)
+        const albumRemoved = await Album.find({ artist: artistRemoved._id }).remove()
+        const songRemoved = await Song.find({ album: albumRemoved._id }).remove
         //Return result
         return res.status(200).send({
             status: "Success",
             message: "Delete artist method",
-            artistRemoved
+            artistRemoved,
+            albumRemoved,
+            songRemoved
         })
     } catch (error) {
         return res.status(500).send({
