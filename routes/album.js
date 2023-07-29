@@ -8,5 +8,8 @@ const albumController = require("../controllers/album")
 //Define route
 router.get("/album-test", albumController.test)
 router.post("/save", check.auth, albumController.save)
+router.get("/album/:id", check.auth, albumController.oneAlbum)
+router.get("/list/:artistId", check.auth, albumController.list)
+
 //Export routes
 module.exports = router
