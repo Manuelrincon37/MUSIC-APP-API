@@ -10,6 +10,8 @@ router.get("/album-test", albumController.test)
 router.post("/save", check.auth, albumController.save)
 router.get("/album/:id", check.auth, albumController.oneAlbum)
 router.get("/list/:artistId", check.auth, albumController.list)
+router.put("/update/:albumId", check.auth, albumController.update)
+
 
 //Export routes
 module.exports = router

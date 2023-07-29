@@ -91,7 +91,33 @@ const list = (req, res) => {
                 error
             })
         })
+}
 
+const update = (req, res) => {
+    //Get url params
+    let albumId = req.params.albumId
+    //Get body data
+    let data = req.body
+    //Find and update info
+    Album.findByIdAndUpdate(albumId, data, { new: true }).
+        then((albumUpdated) => {
+            if (!albumUpdated) {
+                return res.status(400).send({
+                    status: "Error",
+                    message: "Could not update album"
+                })
+            }
+            return res.status(200).send({
+                status: "Error",
+                message: "Update albums method",
+                albumUpdated
+            })
+        }).catch((error) => {
+            return res.status(500).send({
+                status: "Error",
+                message: "Update album error"
+            })
+        })
 
 }
 //Export actions
@@ -99,5 +125,6 @@ module.exports = {
     test,
     save,
     oneAlbum,
-    list
+    list,
+    update
 }
