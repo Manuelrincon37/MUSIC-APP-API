@@ -35,12 +35,36 @@ const save = (req, res) => {
             error
         })
     })
-
 }
-
+const oneSong = (req, res) => {
+    //Get song id by url params
+    let songId = req.params.id
+    //Find song by id
+    Song.findById(songId).populate({ path: "album" }).exec()
+        .then((song) => {
+            if (!song) {
+                return res.status(404).send({
+                    status: "Error",
+                    message: "Song not found"
+                })
+            }
+            return res.status(200).send({
+                statu: "Error",
+                message: "Get song method",
+                song
+            })
+        }).catch((error) => {
+            return res.status(500).send({
+                status: "Error",
+                message: "Get song method server error",
+                error
+            })
+        })
+}
 
 //Export actions
 module.exports = {
     test,
-    save
+    save,
+    oneSong
 }

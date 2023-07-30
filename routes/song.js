@@ -8,5 +8,6 @@ const songController = require("../controllers/song")
 //Define route
 router.get("/song-test", songController.test)
 router.post("/save", check.auth, songController.save)
+router.get("/one-song/:id", check.auth, songController.oneSong)
 //Export routes
 module.exports = router
