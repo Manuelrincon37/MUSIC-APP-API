@@ -3,6 +3,7 @@ const Song = require("../models/song")
 //Impor dependencies
 const fs = require("node:fs")
 const path = require("node:path")
+const song = require("../models/song")
 //Test action
 const test = (req, res) => {
     return res.status(200).send({
@@ -120,18 +121,93 @@ const update = (req, res) => {
 const remove = (req, res) => {
     // get songId to remove
     const songId = req.params.songId
-    Song.findOneAndDelete({ _id: songId }).then((deletedSong) => {
-        if (!deletedSong) {
-            return res.status(400).send({
+
+    Song.findOneAndDelete({ _id: songId })
+        .then((deletedSong) => {
+            if (!deletedSong) {
+                return res.status(404).send({
+                    status: "Error",
+                    message: "Song Not found"
+                })
+            }
+            return res.status(200).send({
+                status: "Success",
+                message: "Delete song method",
+                song_removed: deletedSong
+            })
+        }).catch((error) => {
+            return res.status(500).send({
                 status: "Error",
-                message: "Song Not found"
+                message: "Delete song server error"
+            })
+        })
+}
+
+const upload = (req, res) => {
+    //Set upload configuration of Multer
+    //Get artist id
+    let songId = req.params.id
+    //Get & check image file 
+    if (!req.file) {
+        return res.status(404).send({
+            status: "Error",
+            message: "No iamge file sended"
+        })
+    }
+    //Get file.name
+    let image = req.file.originalname
+    //Get image info (extention)
+    const imageSplit = image.split("\.")
+    const extention = imageSplit[1]
+    //Check if has a valid extention
+    if (extention != "mp3" && extention != "ogg") {
+        //Delete file
+        const filePath = req.file.path
+        const fileDeleted = fs.unlinkSync(filePath)
+        //Return error
+        return res.status(400).send({
+            status: "Error",
+            message: "Unvalid file extention"
+        })
+    }
+    //If vali --> return response
+    Song.findOneAndUpdate({ _id: songId }, { file: req.file.filename }, { new: true })
+        .then((songUpdated) => {
+            if (!songUpdated) {
+                return res.status(400).send({
+                    status: "Error",
+                    message: "Upload file error"
+                })
+            }
+            return res.status(200).send({
+                status: "Success",
+                messahe: "Upload song method",
+                artist: songUpdated,
+                file: req.file
+            })
+        }).catch((error) => {
+            return res.status(500).send({
+                status: "Error",
+                message: "Upload file error"
+            })
+        })
+}
+
+const audio = (req, res) => {
+    //Get params from URL
+    const file = req.params.file
+    //Mount file real path
+    const filePath = "./uploads/songs/" + file
+    //Chekc if file exist
+    fs.stat(filePath, (error, exist) => {
+        if (error || !exist) {
+            return res.status(404).send({
+                status: "Error",
+                message: "File not found"
             })
         }
-        return res.status(200).send({
-            status: "Success",
-            message: "Delete song method",
-            song_removed: deletedSong
-        })
+        //Return file as it is
+        return res.sendFile(path.resolve(filePath))
     })
 }
 //Export actions
@@ -141,5 +217,7 @@ module.exports = {
     oneSong,
     list,
     update,
-    remove
+    remove,
+    upload,
+    audio
 }
