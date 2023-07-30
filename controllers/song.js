@@ -117,12 +117,29 @@ const update = (req, res) => {
             })
         })
 }
-
+const remove = (req, res) => {
+    // get songId to remove
+    const songId = req.params.songId
+    Song.findOneAndDelete({ _id: songId }).then((deletedSong) => {
+        if (!deletedSong) {
+            return res.status(400).send({
+                status: "Error",
+                message: "Song Not found"
+            })
+        }
+        return res.status(200).send({
+            status: "Success",
+            message: "Delete song method",
+            song_removed: deletedSong
+        })
+    })
+}
 //Export actions
 module.exports = {
     test,
     save,
     oneSong,
     list,
-    update
+    update,
+    remove
 }

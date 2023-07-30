@@ -11,5 +11,6 @@ router.post("/save", check.auth, songController.save)
 router.get("/one/:id", check.auth, songController.oneSong)
 router.get("/list/:albumId", check.auth, songController.list)
 router.put("/update/:songId", check.auth, songController.update)
+router.delete("/remove/:songId", check.auth, songController.remove)
 //Export routes
 module.exports = router
