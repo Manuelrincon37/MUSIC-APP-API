@@ -1,5 +1,6 @@
 //Import models
 const Album = require("../models/album")
+const Song = require("../models/song")
 //Impor dependencies
 const fs = require("node:fs")
 const path = require("node:path")
@@ -189,6 +190,29 @@ const image = (req, res) => {
         return res.sendFile(path.resolve(filePath))
     })
 }
+const remove = async (req, res) => {
+    //Get album id from url params
+    const albumId = req.params.albumId
+    //Find and delete artist with "await"
+    try {
+        const albumRemoved = await Album.findOneAndDelete({ _id: albumId })
+        const songsRemoved = await Song.deleteMany({ album: albumId })
+
+        //Return result
+        return res.status(200).send({
+            status: "Success",
+            message: "Delete album method",
+            albumRemoved,
+            songsRemoved
+        })
+    } catch (error) {
+        return res.status(500).send({
+            status: "Error",
+            message: "Delete album Error",
+            error,
+        })
+    }
+}
 //Export actions
 module.exports = {
     test,
@@ -197,5 +221,6 @@ module.exports = {
     list,
     update,
     upload,
-    image
+    image,
+    remove
 }

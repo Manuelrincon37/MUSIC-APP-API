@@ -24,6 +24,6 @@ router.get("/list/:artistId", check.auth, albumController.list)
 router.put("/update/:albumId", check.auth, albumController.update)
 router.post("/upload/:id", [check.auth, uploads.single("file0")], albumController.upload)
 router.get("/image/:file", albumController.image)
-
+router.delete("/remove/:albumId", check.auth, albumController.remove)
 //Export routes
 module.exports = router

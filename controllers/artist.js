@@ -137,16 +137,20 @@ const remove = async (req, res) => {
     const artistId = req.params.id
     //Find and delete artist with "await"
     try {
-        const artistRemoved = await Artist.findByIdAndDelete(artistId)
-        const albumRemoved = await Album.find({ artist: artistRemoved._id }).remove()
-        const songRemoved = await Song.find({ album: albumRemoved._id }).remove
+
+        const artistRemoved = await Artist.findOneAndDelete({ _id: artistId })
+        const albumRemoved = await Album.find({ artist: artistId })
+
+        albumRemoved.forEach(async (album) => {
+            const songRemoved = await Song.deleteMany({ album: album._id })
+            album.remove()
+        })
+
         //Return result
         return res.status(200).send({
             status: "Success",
             message: "Delete artist method",
-            artistRemoved,
-            albumRemoved,
-            songRemoved
+            artistRemoved
         })
     } catch (error) {
         return res.status(500).send({
