@@ -1,5 +1,8 @@
 //Import models
 const Album = require("../models/album")
+//Impor dependencies
+const fs = require("node:fs")
+const path = require("node:path")
 //Test action
 const test = (req, res) => {
     return res.status(200).send({
@@ -118,7 +121,73 @@ const update = (req, res) => {
                 message: "Update album error"
             })
         })
+}
+const upload = (req, res) => {
+    //Set upload configuration of Multer
+    //Get artist id
+    let albumId = req.params.id
+    //Get & check image file 
+    if (!req.file) {
+        return res.status(404).send({
+            status: "Error",
+            message: "No iamge file sended"
+        })
+    }
+    //Get file.name
+    let image = req.file.originalname
+    //Get image info (extention)
+    const imageSplit = image.split("\.")
+    const extention = imageSplit[1]
+    //Check if has a valid extention
+    if (extention != "png" && extention != "jpg" && extention != "jpeg" && extention != "gif") {
+        //Delete file
+        const filePath = req.file.path
+        const fileDeleted = fs.unlinkSync(filePath)
+        //Return error
+        return res.status(400).send({
+            status: "Error",
+            message: "Unvalid file extention"
+        })
+    }
+    //If vali --> return response
+    Album.findOneAndUpdate({ _id: albumId }, { image: req.file.filename }, { new: true })
+        .then((albumUpdated) => {
+            if (!albumUpdated) {
+                return res.status(500).send({
+                    status: "Error",
+                    message: "Upload file error"
+                })
+            }
+            return res.status(200).send({
+                status: "Success",
+                messahe: "Upload img method",
+                artist: albumUpdated,
+                file: req.file
+            })
+        }).catch((error) => {
+            return res.status(500).send({
+                status: "Error",
+                message: "Find user error"
+            })
+        })
+}
 
+const image = (req, res) => {
+    //Get params from URL
+    const file = req.params.file
+    //Mount file real path
+    const filePath = "./uploads/albums/" + file
+    //Chekc if file exist
+    fs.stat(filePath, (error, exist) => {
+        if (error || !exist) {
+            return res.status(404).send({
+                status: "Error",
+                message: "File not found"
+            })
+        }
+        //Return file as it is
+        return res.sendFile(path.resolve(filePath))
+    })
 }
 //Export actions
 module.exports = {
@@ -126,5 +195,7 @@ module.exports = {
     save,
     oneAlbum,
     list,
-    update
+    update,
+    upload,
+    image
 }

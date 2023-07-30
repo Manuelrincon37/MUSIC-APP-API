@@ -20,7 +20,7 @@ const SongSchema = Schema({
     },
     file: {
         type: String,
-        required: true
+        defautl: "default.mp3"
     },
     created_at: {
         type: Date,
