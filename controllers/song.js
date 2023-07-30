@@ -62,9 +62,40 @@ const oneSong = (req, res) => {
         })
 }
 
+const list = (req, res) => {
+    //Get album id
+    let albumId = req.params.albumId
+    //Find album in db
+    Song.find({ album: albumId }).populate({
+        path: "album",
+        populate: {
+            path: "artist",
+            model: "Artist"
+        }
+    })
+        .sort("track").exec()
+        .then((songs) => {
+            if (!songs) {
+                return res.status(404).send({
+                    status: "Error",
+                    message: "Songs not found"
+                })
+            }
+            //return result
+            return res.status(200).send({
+                status: "Success",
+                message: "List songs method",
+                songs
+            })
+        })
+
+
+}
+
 //Export actions
 module.exports = {
     test,
     save,
-    oneSong
+    oneSong,
+    list
 }
