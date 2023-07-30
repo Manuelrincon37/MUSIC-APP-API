@@ -88,8 +88,34 @@ const list = (req, res) => {
                 songs
             })
         })
+}
 
-
+const update = (req, res) => {
+    //Get song id by url params
+    let songId = req.params.songId
+    //Get data to save from body
+    let data = req.body
+    //Find and update
+    Song.findByIdAndUpdate(songId, data, { new: true }).exec()
+        .then((songUpdated) => {
+            if (!songUpdated) {
+                return res.status(400).send({
+                    status: "Error",
+                    message: "Could not update song"
+                })
+            }
+            return res.status(200).send({
+                status: "Success",
+                message: "List songs method",
+                songUpdated
+            })
+        }).catch((error) => {
+            return res.status(500).send({
+                status: "Error",
+                message: "Update song server error",
+                error
+            })
+        })
 }
 
 //Export actions
@@ -97,5 +123,6 @@ module.exports = {
     test,
     save,
     oneSong,
-    list
+    list,
+    update
 }
